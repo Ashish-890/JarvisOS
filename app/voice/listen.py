@@ -1,50 +1,36 @@
-import sounddevice as sd
-from scipy.io.wavfile import write
-from faster_whisper import WhisperModel
-import tempfile
-import os
+from app.voice.recorder import Recorder
+from app.voice.transcriber import Transcriber
 
-# Use CPU for now
-model = WhisperModel("base", device="cpu", compute_type="int8")
+recorder = Recorder()
+transcriber = Transcriber()
+
+IGNORE_WORDS = {
+    "you",
+    "yeah",
+    "okay",
+    "ok",
+    "thanks",
+    "thank you",
+    "hmm",
+    "um",
+    "uh",
+}
 
 
-def listen(seconds=5):
-    print("🎤 Listening...")
+def listen():
 
-    fs = 16000
+    audio = recorder.record()
 
-    recording = sd.rec(
-        int(seconds * fs),
-        samplerate=fs,
-        channels=1,
-        dtype="int16"
-    )
+    # Nobody spoke
+    if audio is None:
+        return ""
 
-    sd.wait()
+    text = transcriber.transcribe(audio).strip()
 
-    # Create temp file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp:
-        temp_path = temp.name
+    if not text:
+        return ""
 
-    # Save recording
-    write(temp_path, fs, recording)
+    if text.lower() in IGNORE_WORDS:
+        return ""
 
-    # Transcribe
-    segments, info = model.transcribe(
-    temp_path,
-    language="en",
-    beam_size=5
-    )
-
-    text = ""
-
-    for segment in segments:
-        text += segment.text
-
-    # Clean up safely
-    try:
-        os.remove(temp_path)
-    except PermissionError:
-        pass
-
-    return text.strip()
+    return text
