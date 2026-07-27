@@ -13,3 +13,6 @@ __pycache__/
 
 # Python cache
 .pytest_cache/
+
+# Temporary audio files
+*.wav

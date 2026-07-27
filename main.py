@@ -1,20 +1,32 @@
 from rich.console import Console
+
 from app.brain.brain import JarvisBrain
+from app.voice.listen import listen
 from app.voice.speak import speak
 
 console = Console()
 brain = JarvisBrain()
 
-console.print("[bold cyan]==================================[/bold cyan]")
-console.print("[bold green]       JARVIS AI v0.1[/bold green]")
-console.print("[bold cyan]==================================[/bold cyan]")
+console.print("[bold cyan]====================================[/bold cyan]")
+console.print("[bold green]        JARVIS AI v0.3[/bold green]")
+console.print("[bold cyan]====================================[/bold cyan]")
+
+speak("Hello Ashish. JARVIS is online.")
 
 while True:
-    user = input("\nYou: ")
 
-    if user.lower() in ["exit", "quit"]:
-        speak("Goodbye, Ashish!")
+    user = listen()
+
+    console.print(f"\n[cyan]You:[/cyan] {user}")
+
+    if user.lower() in ["exit", "quit", "goodbye"]:
+        speak("Goodbye Ashish.")
         break
 
-    response = brain.think(user)
-    speak(response)
+    console.print("[yellow]Thinking...[/yellow]")
+
+    reply = brain.think(user)
+
+    console.print(f"\n[green]Jarvis:[/green] {reply}")
+
+    speak(reply)
